@@ -102,6 +102,26 @@ func GetEventByID(id int64) (*Event, error) {
 	return &event, nil
 }
 
+func (e *Event) Update() error {
+	// Check if the event already has an ID assigned
+	if e.ID != 0 {
+		// Prepare SQL statement for update
+		query := `
+            UPDATE events 
+            SET name = ?, description = ?, location = ?, datetime = ?, user_id = ? 
+            WHERE id = ?`
+
+		// Execute the SQL statement
+		_, err := db.DB.Exec(query, e.Name, e.Description, e.Location, e.DateTime, e.UserID, e.ID)
+		if err != nil {
+			return fmt.Errorf("error executing SQL statement: %v", err)
+		}
+		return nil
+	}
+
+	return fmt.Errorf("Event with id:  %v not found", e.ID)
+}
+
 func DeleteAllEvents() error {
 	// Prepare SQL statement
 	query := "DELETE FROM events"
@@ -126,24 +146,4 @@ func DeleteEventByID(id int64) error {
 	}
 
 	return nil
-}
-
-func (e *Event) Update() error {
-	// Check if the event already has an ID assigned
-	if e.ID != 0 {
-		// Prepare SQL statement for update
-		query := `
-            UPDATE events 
-            SET name = ?, description = ?, location = ?, datetime = ?, user_id = ? 
-            WHERE id = ?`
-
-		// Execute the SQL statement
-		_, err := db.DB.Exec(query, e.Name, e.Description, e.Location, e.DateTime, e.UserID, e.ID)
-		if err != nil {
-			return fmt.Errorf("error executing SQL statement: %v", err)
-		}
-		return nil
-	}
-
-	return fmt.Errorf("Event with id:  %v not found", e.ID )
 }

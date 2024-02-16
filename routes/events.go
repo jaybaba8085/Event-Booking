@@ -56,67 +56,69 @@ func createEvent(context *gin.Context) {
 }
 
 func updateEvent(context *gin.Context) {
-    // Parse event ID from URL parameter
-    eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
-    if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event id."})
-        return
-    }
+	// Parse event ID from URL parameter
+	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event id."})
+		return
+	}
 
-    // Retrieve event by ID
-    existingEvent, err := models.GetEventByID(eventId)
-    if err != nil {
-        context.JSON(http.StatusNotFound, gin.H{"message": "Event not found."})
-        return
-    }
+	// Retrieve event by ID
+	existingEvent, err := models.GetEventByID(eventId)
+	if err != nil {
+		context.JSON(http.StatusNotFound, gin.H{"message": "Event not found."})
+		return
+	}
 
-    // Parse updated event data from request body
-    var updatedEvent models.Event
-    if err := context.ShouldBindJSON(&updatedEvent); err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{"message": "Invalid request body."})
-        return
-    }
+	// Parse updated event data from request body
+	var updatedEvent models.Event
+	// err = context.ShouldBindJSON(&updatedEvent)
+	if err := context.ShouldBindJSON(&updatedEvent); err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Invalid request body."})
+		return
+	}
+ 
+	// Update event fields with new data
+	existingEvent.Name = updatedEvent.Name
+	existingEvent.Description = updatedEvent.Description
+	existingEvent.Location = updatedEvent.Location
+	existingEvent.DateTime = updatedEvent.DateTime
+	existingEvent.UserID = updatedEvent.UserID
 
-    // Update event fields with new data
-    existingEvent.Name = updatedEvent.Name
-    existingEvent.Description = updatedEvent.Description
-    existingEvent.Location = updatedEvent.Location
-    existingEvent.DateTime = updatedEvent.DateTime
-    existingEvent.UserID = updatedEvent.UserID
+	// Save the updated event to the database
+    // err = existingEvent.Update() // can also do like that
+	if err := existingEvent.Update(); err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not update event. Try again later."})
+		return
+	}
 
-    // Save the updated event to the database
-    if err := existingEvent.Update(); err != nil {
-        context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not update event. Try again later."})
-        return
-    }
-
-    // Return success response
-    context.JSON(http.StatusOK, gin.H{"message": "Event updated successfully", "event": existingEvent})
+	// Return success response
+	context.JSON(http.StatusOK, gin.H{"message": "Event updated successfully", "event": existingEvent})
 }
 
 func deleteEvent(context *gin.Context) {
-    // Delete all events
-    if err := models.DeleteAllEvents(); err != nil {
-        context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not delete events. Try again later."})
-        return
-    }
+	// Delete all events
+	if err := models.DeleteAllEvents(); err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not delete events. Try again later."})
+		return
+	}
 
-    context.JSON(http.StatusOK, gin.H{"message": "All events deleted successfully"})
+	context.JSON(http.StatusOK, gin.H{"message": "All events deleted successfully"})
 }
 
 func deleteEventById(context *gin.Context) {
-    // Parse event ID from URL parameter
-    eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
-    if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event id."})
-        return
-    }
+	// Parse event ID from URL parameter
+	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event id."})
+		return
+	}
 
-    // Delete event by ID
-    if err := models.DeleteEventByID(eventId); err != nil {
-        context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not delete event. Try again later."})
-        return
-    }
+	// Delete event by ID
+	if err := models.DeleteEventByID(eventId); err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not delete event. Try again later."})
+		return
+	}
 
-    context.JSON(http.StatusOK, gin.H{"message": "Event deleted successfully"})
+	context.JSON(http.StatusOK, gin.H{"message": "Event deleted successfully"})
 }

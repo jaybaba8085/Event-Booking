@@ -8,14 +8,41 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getEvents(context *gin.Context) {
-	events, err := models.GetAllEvents()
+func createEvent(context *gin.Context) {
+
+	// token := context.Request.Header.Get("Authorization")
+	// if token == "" {
+	// 	context.JSON(http.StatusUnauthorized, gin.H{
+	// 		"message": "Not Authorized. You must be logged in to perform this action.",
+	// 	})
+	// 	return
+	// }
+	// userId, err := utils.VerifyToken(token)
+	// if err != nil {
+	// 	context.JSON(http.StatusUnauthorized, gin.H{
+	// 		"message": "Not Authorized.",
+	// 	})
+	// 	return
+	// }
+
+	var event models.Event
+	err := context.ShouldBindJSON(&event)
+
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch events. Try again later."})
+		context.JSON(http.StatusBadRequest, gin.H{"message": "could not parse the data"})
+	}
+
+	// set the of user who created the event
+	userId := context.GetInt64("userId")
+	event.UserID = int(userId)
+
+	err = event.Save()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not create event. Try again later."})
 		return
 	}
 
-	context.JSON(http.StatusOK, events)
+	context.JSON(http.StatusCreated, gin.H{"message": "Event Created!", "event": event}) //gin.h -> map
 }
 
 func getEvent(context *gin.Context) {
@@ -36,23 +63,15 @@ func getEvent(context *gin.Context) {
 	// Return event as JSON response
 	context.JSON(http.StatusOK, event)
 }
-func createEvent(context *gin.Context) {
-	var event models.Event
-	err := context.ShouldBindJSON(&event)
 
+func getEvents(context *gin.Context) {
+	events, err := models.GetAllEvents()
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"message": "could not parse the data"})
-	}
-
-	event.ID = 1
-	event.UserID = 1
-	err = event.Save()
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not create event. Try again later."})
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch events. Try again later."})
 		return
 	}
 
-	context.JSON(http.StatusCreated, gin.H{"message": "Event Created!", "event": event}) //gin.h -> map
+	context.JSON(http.StatusOK, events)
 }
 
 func updateEvent(context *gin.Context) {
@@ -77,7 +96,7 @@ func updateEvent(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Invalid request body."})
 		return
 	}
- 
+
 	// Update event fields with new data
 	existingEvent.Name = updatedEvent.Name
 	existingEvent.Description = updatedEvent.Description
@@ -86,7 +105,7 @@ func updateEvent(context *gin.Context) {
 	existingEvent.UserID = updatedEvent.UserID
 
 	// Save the updated event to the database
-    // err = existingEvent.Update() // can also do like that
+	// err = existingEvent.Update() // can also do like that
 	if err := existingEvent.Update(); err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not update event. Try again later."})
 		return
@@ -96,7 +115,7 @@ func updateEvent(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "Event updated successfully", "event": existingEvent})
 }
 
-func deleteEvent(context *gin.Context) {
+func deleteAllEvent(context *gin.Context) {
 	// Delete all events
 	if err := models.DeleteAllEvents(); err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not delete events. Try again later."})

@@ -37,13 +37,9 @@ func (e *Event) Save() error {
 	}
 
 	// Retrieve the last inserted ID if needed
-	if e.ID == 0 {
-		id, err := result.LastInsertId()
-		if err != nil {
-			return fmt.Errorf("error retrieving last inserted ID: %v", err)
-		}
-		e.ID = id
-	}
+	id, err := result.LastInsertId()
+	e.ID = id
+
 	return err
 }
 

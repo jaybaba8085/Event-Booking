@@ -46,13 +46,13 @@ func (u *User) Save() error {
 	return err
 }
 
-func (u User) ValidateCredential() error {
+func (u *User) ValidateCredential() error {
 
-	query := "SELECT email, password FROM  users WHERE email = ?"
+	query := "SELECT  id, email, password FROM  users WHERE email = ?"
 	row := db.DB.QueryRow(query, u.Email)
 
 	var retrievehHashPassword string
-	err := row.Scan(&u.Email, &retrievehHashPassword)
+	err := row.Scan(&u.ID, &u.Email, &retrievehHashPassword)
 
 	logger.Info("Checking user credentials")
 

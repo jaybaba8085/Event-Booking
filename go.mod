@@ -5,6 +5,8 @@ go 1.21.6
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/mattn/go-sqlite3 v1.14.22
+	github.com/sirupsen/logrus v1.9.3
+	golang.org/x/crypto v0.19.0
 )
 
 require (
@@ -27,7 +29,6 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	golang.org/x/arch v0.7.0 // indirect
-	golang.org/x/crypto v0.19.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect

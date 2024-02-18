@@ -143,3 +143,21 @@ func DeleteEventByID(id int64) error {
 
 	return nil
 }
+
+// CancelRegistration cancels a user's registration for a specific event.
+func (e *Event) CancelRegistration(userId int64) error {
+	// Prepare the SQL statement
+	stmt, err := db.DB.Prepare("DELETE FROM registrations WHERE event_id = ? AND user_id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	// Execute the SQL statement
+	_, err = stmt.Exec(e.ID, userId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

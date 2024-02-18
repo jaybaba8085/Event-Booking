@@ -52,18 +52,18 @@ func RegisterForEvent(context *gin.Context) {
 
 // CancelRegistration cancels a user's registration for a specific event.
 func CancelRegistration(context *gin.Context) {
-	// Extract registration ID from the request
-	registrationID := context.PostForm("registration_id")
-
-	// Convert registration ID to an integer
-	registrationIDInt, err := strconv.Atoi(registrationID)
+	userID := context.GetInt64("userId")
+	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid registration ID"})
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event id."})
 		return
 	}
+ 
+	var event models.Event
+	event.ID = eventId
 
 	// Perform cancellation in the database
-	err = models.CancelRegistration(registrationIDInt)
+	err = event.CancelRegistration(userID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to cancel registration"})
 		return
